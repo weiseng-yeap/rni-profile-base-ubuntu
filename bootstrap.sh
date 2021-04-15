@@ -18,11 +18,15 @@ if [[ $kernel_params == *"token="* ]]; then
     export param_token="${tmp%% *}"
 fi
 
+# This will create a variable that has the following structure
+# http://<EDGE_BUILDER_IP>/profile/<PROFILE_NAME>_base
 if [[ $kernel_params == *"basebranch="* ]]; then
     tmp="${kernel_params##*basebranch=}"
     export param_basebranch="${tmp%% *}"
 fi
 
+# This will create a variable that has the following structure
+# http://<EDGE_BUILDER_IP>/profile/<PROFILE_NAME>
 if [[ $kernel_params == *"bootstrap="* ]]; then
     tmp="${kernel_params##*bootstrap=}"
     export param_bootstrap="${tmp%% *}"
