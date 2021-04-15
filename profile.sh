@@ -30,10 +30,16 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
     mount -t sysfs sysfs /target/root/sys && \
     LANG=C.UTF-8 chroot /target/root sh -c \
         \"$(echo ${INLINE_PROXY} | sed "s#'#\\\\\"#g") export TERM=xterm-color && \
+        mount ${BOOT_PARTITION} /boot && \
         export DEBIAN_FRONTEND=noninteractive && \
         apt install -y tasksel && \
         tasksel install ${ubuntu_bundles} && \
-        apt install -y ${ubuntu_packages}\"'" \
+        apt install -y ${ubuntu_packages} && \
+        wget --header \\\"Authorization: token ${param_token}\\\" ${param_bootstrapurl/profile/files}/linux-image.deb && \
+        wget --header \\\"Authorization: token ${param_token}\\\" ${param_bootstrapurl/profile/files}/linux-headers.deb && \
+        dpkg -i linux-image.deb && \
+        dpkg -i linux-headers.deb && \
+        update-grub\"'" \
     ${PROVISION_LOG}
 
 # --- Pull any and load any system images ---
