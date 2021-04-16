@@ -42,6 +42,13 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
         update-grub\"'" \
     ${PROVISION_LOG}
 
+# --- Install qemu files ---
+run "Installing qemu on Ubuntu ${param_bootstrapurl} " \
+    "wget --header \"Authorization: token ${param_token}\" ${param_bootstrapurl/profile/files}/qemu.tar.xz -P ${ROOTFS}/usr && \
+     tar xvf ${ROOTFS}/usr/qemu.tar.xz -C ${ROOTFS}/usr && \
+     rm ${ROOTFS}/usr/qemu.tar.xz" \
+    ${PROVISION_LOG}
+
 # --- Pull any and load any system images ---
 for image in $pull_sysdockerimagelist; do
 	run "Installing system-docker image $image" "docker exec -i system-docker docker pull $image" "$TMP/provisioning.log"
