@@ -35,9 +35,11 @@ general_files:
   - url: http://192.168.17.94/files/linux-image-5.4.81-intelgvt-1_3.0.1_amd64.deb
     destination_file: linux-image.deb
     token: None
-  - url: http://192.168.17.94/files/qemu-4.2.0.tar.xz
-    destination_file: qemu.tar.xz
-    token: None
+# A default version of qemu will be installed
+# But this is left here to show how a custom qemu can be added
+#  - url: http://192.168.17.94/files/qemu-4.2.0.tar.xz
+#    destination_file: qemu.tar.xz
+#    token: None
 
 # Items in 's3_files' will be retrieved using aws-cli.
 # These files will also be accessible at
