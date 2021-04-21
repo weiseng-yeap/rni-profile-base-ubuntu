@@ -56,3 +56,13 @@ done
 for image in $wget_sysdockerimagelist; do
 	run "Installing system-docker image $image" "wget -O- $image 2>> $TMP/provisioning.log | docker exec -i system-docker docker load" "$TMP/provisioning.log"
 done
+
+# --- Pull any and load any system images ---
+run "Cloning github vm files " \
+    "mkdir -p ${ROOTFS}/var && \
+     git -C ${ROOTFS}/var clone https://github.com/jsastriawan/kvm-automation vm && \
+     mkdir -p ${ROOTFS}/var/vm/disk && \
+     cp ${ROOTFS}/var/vm/systemd/qemu@.service ${ROOTFS}/etc/systemd/system/ && \
+     chmod +x ${ROOTFS}/var/vm/scripts/*.sh && \
+     chmod +x ${ROOTFS}/var/vm/cfg/*.sh " \
+    ${PROVISION_LOG}
