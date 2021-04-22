@@ -68,7 +68,8 @@ run "Cloning github vm files " \
     ${PROVISION_LOG}
 
 run "Cloning github idv files " \
-    "git -C ${ROOTFS}/var clone https://github.com/philip-park/idv idv" \
+    "git -C ${ROOTFS}/var clone https://github.com/philip-park/idv idv && \
+     chmod +x ${ROOTFS}/var/idv/scripts/*.sh " \
      ${PROVISION_LOG}
 
 
