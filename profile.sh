@@ -21,6 +21,10 @@ pull_sysdockerimagelist=""
 wget_sysdockerimagelist="" 
 
 
+# Quotes and apostrophes must be escaped /" or /'
+WGET_HEADER="--header \"Authorization: token ${param_token}\""
+STAGE_URL="http://${PROVISIONER}/stage/"
+
 # --- Install Extra Packages ---
 run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
     "docker run -i --rm --privileged --name ubuntu-installer ${DOCKER_PROXY_ENV} -v /dev:/dev -v /sys/:/sys/ -v $ROOTFS:/target/root ubuntu:${param_ubuntuversion} sh -c \
@@ -34,8 +38,8 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
         apt install -y tasksel && \
         tasksel install ${ubuntu_bundles} && \
         apt install -y ${ubuntu_packages} && \
-        wget --header \\\"Authorization: token ${param_token}\\\" ${param_bootstrapurl/profile/files}/linux-image.deb && \
-        wget --header \\\"Authorization: token ${param_token}\\\" ${param_bootstrapurl/profile/files}/linux-headers.deb && \
+        wget ${WGET_HEADER} ${STAGE_URL}/kernel/linux-image.deb && \
+        wget ${WGET_HEADER} ${STAGE_URL}/kernel/linux-headers.deb && \
         dpkg -i linux-image.deb && \
         dpkg -i linux-headers.deb && \
         update-grub\"'" \
@@ -43,9 +47,9 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
 
 # --- Install qemu files ---
 #run "Installing qemu on Ubuntu ${param_bootstrapurl} " \
-#    "wget --header \"Authorization: token ${param_token}\" ${param_bootstrapurl/profile/files}/qemu.tar.xz -P ${ROOTFS}/usr && \
-#     tar xvf ${ROOTFS}/usr/qemu.tar.xz -C ${ROOTFS}/usr && \
-#     rm ${ROOTFS}/usr/qemu.tar.xz" \
+#    "wget ${WGET_HEADER} ${STAGE_URL}/qemu/qemu.tar.gz -P ${ROOTFS}/usr && \
+#     tar xvf ${ROOTFS}/usr/qemu.tar.gz -C ${ROOTFS}/usr && \
+#     rm ${ROOTFS}/usr/qemu.tar.gz" \
 #    ${PROVISION_LOG}
 
 # --- Pull any and load any system images ---
@@ -61,23 +65,20 @@ done
 # Disk images are large and can cause memory overrun issues with wget,
 #   so they must be pulled one at a time
 
-# Quotes and apostrophes must be escaped /" or /'
-WGET_HEADER="--header \"Authorization: token ${param_token}\""
-WGET_RECURSIVE="--cut-dirs=1 --reject=\"index.html*\" -nH  -r --no-parent"
-
+WGET_RECURSIVE="--cut-dirs=2 --reject=\"index.html*\" -nH  -r --no-parent"
 run "Cloning github vm files " \
-    "wget ${WGET_HEADER} ${WGET_RECURSIVE} -P ${ROOTFS}/ http://192.168.17.94/target/ && \
+    "wget ${WGET_HEADER} ${WGET_RECURSIVE} -P ${ROOTFS}/ ${STAGE_URL}/target/ && \
      chmod +x ${ROOTFS}/var/vm/scripts/*.sh && \
      mkdir -p ${ROOTFS}/var/vm/disk && \
      echo \"***Done***\"  " \
     ${PROVISION_LOG}
 
 # --- Get QCOW Image Files ---
-QCOWFILES=$(wget -O - http://192.168.17.94/disk/ | grep ".qcow2" | awk -F"href=" '{print $2}' | awk -F\" '{print $2}')
+QCOWFILES=$(wget -O - ${STAGE_URL}/disk/ | grep ".qcow2" | awk -F"href=" '{print $2}' | awk -F\" '{print $2}')
 
 for image in $QCOWFILES; do
 	run "Installing VM-Image $image" \
-        "wget ${WGET_HEADER} -P ${ROOTFS}/var/vm/disk http://192.168.17.94/disk/$image" \
+        "wget ${WGET_HEADER} -P ${ROOTFS}/var/vm/disk ${STAGE_URL}/disk/$image" \
         "$TMP/provisioning.log"
 done
 
