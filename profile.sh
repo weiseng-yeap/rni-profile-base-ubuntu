@@ -12,7 +12,7 @@ source /opt/bootstrap/functions
 
 # --- Add Packages
 ubuntu_bundles="openssh-server"
-ubuntu_packages="wget qemu-system-x86 ovmf"
+ubuntu_packages="wget qemu-system-x86 ovmf libegl1-mesa-dev"
 
 # --- List out any docker images you want pre-installed separated by spaces. ---
 pull_sysdockerimagelist=""
@@ -21,9 +21,9 @@ pull_sysdockerimagelist=""
 wget_sysdockerimagelist="" 
 
 
-# Quotes and apostrophes must be escaped /" or /'
-WGET_HEADER="--header \"Authorization: token ${param_token}\""
-STAGE_URL="http://${PROVISIONER}/stage/"
+# Quotes and apostrophes must be double escaped ///" 
+WGET_HEADER_V2="--header \\\"Authorization: token ${param_token}\\\""
+STAGE_URL="http://${PROVISIONER}/stage"
 
 # --- Install Extra Packages ---
 run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
@@ -38,14 +38,17 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
         apt install -y tasksel && \
         tasksel install ${ubuntu_bundles} && \
         apt install -y ${ubuntu_packages} && \
-        wget ${WGET_HEADER} ${STAGE_URL}/kernel/linux-image.deb && \
-        wget ${WGET_HEADER} ${STAGE_URL}/kernel/linux-headers.deb && \
+        wget ${WGET_HEADER_V2} ${STAGE_URL}/kernel/linux-image.deb && \
+        wget ${WGET_HEADER_V2} ${STAGE_URL}/kernel/linux-headers.deb && \
         dpkg -i linux-image.deb && \
         dpkg -i linux-headers.deb && \
         update-grub\"'" \
     ${PROVISION_LOG}
 
 # --- Install qemu files ---
+# Quotes and apostrophes must be escaped /" or /'
+WGET_HEADER="--header \"Authorization: token ${param_token}\""
+
 #run "Installing qemu on Ubuntu ${param_bootstrapurl} " \
 #    "wget ${WGET_HEADER} ${STAGE_URL}/qemu/qemu.tar.gz -P ${ROOTFS}/usr && \
 #     tar xvf ${ROOTFS}/usr/qemu.tar.gz -C ${ROOTFS}/usr && \
