@@ -18,6 +18,68 @@ Intended to be used with [Retail Node Installer](https://github.com/intel/retail
     * MMC
 * 4 GB of RAM
 
+## Detailed Instructions
+
+### Set Up ESP Server
+
+Follow steps 1-3 from here: https://github.com/intel/edge-software-provisioner#quick-installation-guide
+
+Open the file conf/config.yml and add the follow profile:
+```
+  - git_remote_url: https://github.com/sedillo/rni-profile-base-ubuntu/
+    profile_branch: gvt
+    profile_base_branch: master
+    git_username: ""
+    git_token: ""
+    # This is the name that will be shown on the PXE menu (NOTE: No Spaces)
+    name: GVT
+    custom_git_arguments: ""
+```
+
+Now follow steps 4-5 from the same guide: https://github.com/intel/edge-software-provisioner#quick-installation-guide
+
+### KVM Configuration
+Now build a KVM kernel
+```
+git -C /opt clone https://github.com/philip-park/idv.git
+cd /opt/idv
+./build-kernel.sh
+```
+Choose the latest 5.4/yocto intel kernel.
+
+Look in /opt/idv/build/ for a linux-headers and linux-image .debian files
+
+### Merge KVM with ESP
+We will combine the KVM files built with the ESP Apache server located here /opt/esp/data/usr/share/nginx/html
+Verify this folder exists.
+```
+cd /opt
+mkdir -p /opt/esp/data/usr/share/nginx/html/stage
+ln -s /opt/esp/data/usr/share/nginx/html/stage stage
+```
+Adding any file to /opt/stage should now appear at the ESP URL http://${PROVISIONER}/stage/
+```
+mkdir -p /opt/stage/kernel
+mkdir -p /opt/stage/qemu
+mkdir -p /opt/stage/disk
+```
+Move the kernel files and make sure to match the names below
+- /opt/stage/kernel/linux-image.deb
+- /opt/stage/kernel/linux-headers.deb
+
+
+Create a VM file system using the example as a template
+```bash
+git -C /opt clone https://github.com/sedillo/idv/ target-files
+cp -r /opt/target-files/target-example /opt/stage/target
+```
+Move any disk images to the following directory *Make sure the file ends in .qcow2*
+- /opt/stage/disk/\*.qcow2
+
+
+Optional: A default Qemu is installed, but this can be overriden by adding qemu here 
+- /opt/stage/qemu/qemu.tar.gz
+
 ## Getting Started
 
 **A necessary prerequisite to using this profile is having an Retail Node Installer deployed**. Please refer to Retail Node Installer project documentation for [installation](https://github.com/intel/retail-node-installer) in order to deploy it.
