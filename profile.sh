@@ -21,7 +21,6 @@ pull_sysdockerimagelist=""
 wget_sysdockerimagelist="" 
 
 
-
 # --- Install Extra Packages ---
 run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
     "docker run -i --rm --privileged --name ubuntu-installer ${DOCKER_PROXY_ENV} -v /dev:/dev -v /sys/:/sys/ -v $ROOTFS:/target/root ubuntu:${param_ubuntuversion} sh -c \
@@ -43,11 +42,11 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
     ${PROVISION_LOG}
 
 # --- Install qemu files ---
-run "Installing qemu on Ubuntu ${param_bootstrapurl} " \
-    "wget --header \"Authorization: token ${param_token}\" ${param_bootstrapurl/profile/files}/qemu.tar.xz -P ${ROOTFS}/usr && \
-     tar xvf ${ROOTFS}/usr/qemu.tar.xz -C ${ROOTFS}/usr && \
-     rm ${ROOTFS}/usr/qemu.tar.xz" \
-    ${PROVISION_LOG}
+#run "Installing qemu on Ubuntu ${param_bootstrapurl} " \
+#    "wget --header \"Authorization: token ${param_token}\" ${param_bootstrapurl/profile/files}/qemu.tar.xz -P ${ROOTFS}/usr && \
+#     tar xvf ${ROOTFS}/usr/qemu.tar.xz -C ${ROOTFS}/usr && \
+#     rm ${ROOTFS}/usr/qemu.tar.xz" \
+#    ${PROVISION_LOG}
 
 # --- Pull any and load any system images ---
 for image in $pull_sysdockerimagelist; do
@@ -57,12 +56,49 @@ for image in $wget_sysdockerimagelist; do
 	run "Installing system-docker image $image" "wget -O- $image 2>> $TMP/provisioning.log | docker exec -i system-docker docker load" "$TMP/provisioning.log"
 done
 
-# --- Pull any and load any system images ---
+
+# --- Pull KVM files from local apache server ---
+# Disk images are large and can cause memory overrun issues with wget,
+#   so they must be pulled one at a time
+
+# Quotes and apostrophes must be escaped /" or /'
+WGET_HEADER="--header \"Authorization: token ${param_token}\""
+WGET_RECURSIVE="--cut-dirs=1 --reject=\"index.html*\" -nH  -r --no-parent"
+
 run "Cloning github vm files " \
-    "mkdir -p ${ROOTFS}/var && \
-     git -C ${ROOTFS}/var clone https://github.com/jsastriawan/kvm-automation vm && \
-     mkdir -p ${ROOTFS}/var/vm/disk && \
-     cp ${ROOTFS}/var/vm/systemd/qemu@.service ${ROOTFS}/etc/systemd/system/ && \
+    "wget ${WGET_HEADER} ${WGET_RECURSIVE} -P ${ROOTFS}/ http://192.168.17.94/target/ && \
      chmod +x ${ROOTFS}/var/vm/scripts/*.sh && \
-     chmod +x ${ROOTFS}/var/vm/cfg/*.sh " \
+     mkdir -p ${ROOTFS}/var/vm/disk && \
+     echo \"***Done***\"  " \
     ${PROVISION_LOG}
+
+# --- Get QCOW Image Files ---
+QCOWFILES=$(wget -O - http://192.168.17.94/disk/ | grep ".qcow2" | awk -F"href=" '{print $2}' | awk -F\" '{print $2}')
+
+for image in $QCOWFILES; do
+	run "Installing VM-Image $image" \
+        "wget ${WGET_HEADER} -P ${ROOTFS}/var/vm/disk http://192.168.17.94/disk/$image" \
+        "$TMP/provisioning.log"
+done
+
+# --- Setting up services ---
+run "Starting kvm services" \
+    "docker run -i --rm --privileged \
+       --name ubuntu-installer ${DOCKER_PROXY_ENV} \
+       -v /dev:/dev -v /sys/:/sys/ -v $ROOTFS:/target/root \
+       ubuntu:${param_ubuntuversion} \
+       sh -c \
+         'mount --bind dev /target/root/dev && \
+          mount -t proc proc /target/root/proc && \
+          mount -t sysfs sysfs /target/root/sys && \
+          LANG=C.UTF-8 \
+          chroot /target/root \
+          sh -c \
+              \"$(echo ${INLINE_PROXY} | sed "s#'#\\\\\"#g") \
+                export TERM=xterm-color && \
+                mount ${BOOT_PARTITION} /boot && \
+                export DEBIAN_FRONTEND=noninteractive && \
+                systemctl enable qemu.service && \
+                systemctl enable vgpu.service \"'" \
+    ${PROVISION_LOG}
+
