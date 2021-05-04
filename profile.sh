@@ -40,8 +40,10 @@ run "Installing Extra Packages on Ubuntu ${param_ubuntuversion}" \
         apt install -y ${ubuntu_packages} && \
         wget ${WGET_HEADER_V2} ${STAGE_URL}/kernel/linux-image.deb && \
         wget ${WGET_HEADER_V2} ${STAGE_URL}/kernel/linux-headers.deb && \
+        wget ${WGET_HEADER_V2} ${STAGE_URL}/kernel/OVMF.deb && \
         dpkg -i linux-image.deb && \
         dpkg -i linux-headers.deb && \
+        dpkg -i OVMF.deb && \
         update-grub\"'" \
     ${PROVISION_LOG}
 
@@ -109,10 +111,13 @@ run "Starting kvm services" \
                 mount ${BOOT_PARTITION} /boot && \
                 export DEBIAN_FRONTEND=noninteractive && \
                 systemctl enable qemu.service && \
+                systemctl enable vgpu.service && \
                 usermod -a -G kvm ${param_username} && \
                 usermod -a -G render ${param_username} && \
                 usermod -a -G video ${param_username} && \
                 usermod -a -G dialout ${param_username} && \
-                systemctl enable vgpu.service \"'" \
+                add-apt-repository ppa:stefanberger/swtpm-focal && \
+                apt-get update -y && \
+                apt-get install -y swtpm \"'" \
     ${PROVISION_LOG}
 
