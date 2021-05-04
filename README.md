@@ -63,9 +63,9 @@ Move the kernel files and make sure to match the names below
 
 Create a VM file system using the example as a template
 ```bash
-git -C /opt clone https://github.com/sedillo/idv/ target-files
-ln -s /opt/target-files/target-example /opt/stage/target
+git -C /opt/stage clone https://github.com/sedillo/kvm-target.git target
 ```
+
 Move any disk images to the following directory *Make sure the file ends in .qcow2*
 - /opt/stage/disk/\*.qcow2
 
