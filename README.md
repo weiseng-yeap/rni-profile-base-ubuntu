@@ -38,16 +38,9 @@ Open the file conf/config.yml and add the follow profile:
 
 Now follow steps 4-5 from the same guide: https://github.com/intel/edge-software-provisioner#quick-installation-guide
 
-### KVM Configuration
-Now build a KVM kernel
-```
-git -C /opt clone https://github.com/philip-park/idv.git
-cd /opt/idv
-./build-kernel.sh
-```
-Choose the latest 5.4/yocto intel kernel.
+### Kernel Build
 
-Look in /opt/idv/build/ for a linux-headers and linux-image .debian files
+Follow instructions on Github here: https://github.com/huichuno/linuxbox
 
 ### Merge KVM with ESP
 We will combine the KVM files built with the ESP Apache server located here /opt/esp/data/usr/share/nginx/html
@@ -71,7 +64,7 @@ Move the kernel files and make sure to match the names below
 Create a VM file system using the example as a template
 ```bash
 git -C /opt clone https://github.com/sedillo/idv/ target-files
-cp -r /opt/target-files/target-example /opt/stage/target
+ln -s /opt/target-files/target-example /opt/stage/target
 ```
 Move any disk images to the following directory *Make sure the file ends in .qcow2*
 - /opt/stage/disk/\*.qcow2
