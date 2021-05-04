@@ -85,6 +85,12 @@ for image in $QCOWFILES; do
         "$TMP/provisioning.log"
 done
 
+# --- Adding missing kernel modules --- 
+run "Enabling vfio-pci module " \
+    "mkdir -p $ROOTFS/etc/modules-load.d/ && \
+     echo 'vfio-pci' > $ROOTFS/etc/modules-load.d/vfio-pci.conf" \
+    "$TMP/provisioning.log"
+
 # --- Setting up services ---
 run "Starting kvm services" \
     "docker run -i --rm --privileged \
@@ -103,6 +109,10 @@ run "Starting kvm services" \
                 mount ${BOOT_PARTITION} /boot && \
                 export DEBIAN_FRONTEND=noninteractive && \
                 systemctl enable qemu.service && \
+                usermod -a -G kvm ${param_username} && \
+                usermod -a -G render ${param_username} && \
+                usermod -a -G video ${param_username} && \
+                usermod -a -G dialout ${param_username} && \
                 systemctl enable vgpu.service \"'" \
     ${PROVISION_LOG}
 
