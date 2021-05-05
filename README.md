@@ -20,6 +20,12 @@ Intended to be used with [Retail Node Installer](https://github.com/intel/retail
 
 ## Detailed Instructions
 
+### Hardware preparation/UEFI settings
+
+Key area to configure to ensure maximum utilization of hardware are:
+- VT-d setting: enabled
+- Graphic Aperture size: 1024MB
+
 ### Set Up ESP Server
 
 Follow steps 1-3 from here: https://github.com/intel/edge-software-provisioner#quick-installation-guide
@@ -66,6 +72,15 @@ Create a VM file system using the example as a template
 git -C /opt/stage clone https://github.com/sedillo/kvm-target.git target
 ```
 
+OVMF Files
+```bash
+cd /opt
+apt-get install -y alien
+wget https://www.kraxel.org/repos/jenkins/edk2/edk2.git-ovmf-x64-0-20210421.12.gf297b7f200.noarch.rpm
+alien edk2.git-ovmf-x64-0-20210421.12.gf297b7f200.noarch.rpm
+cp edk2.git-ovmf-x64_0-20210422.12_all.deb /opt/stage/kernel/OVMF.deb
+```
+
 Move any disk images to the following directory *Make sure the file ends in .qcow2*
 - /opt/stage/disk/\*.qcow2
 
@@ -99,23 +114,6 @@ The following kernel parameters can be added to `conf/config.yml`
 * `release` - [prod | dev] If set to prod the system will shutdown after it is provisioned.  Altnerativily it will reboot.
 * `token` - GitHub token for private repositories, if this profile is in a private respository this token should have access to this repo
 * `username` - Initial user name. Defaults to 'sys-admin'
-
-## Sample Profile Section
-
-* To use base profile with custom profile, Please refer below sample profile section of config.yml for Retail Node Installer 
-
-```yaml
-# Please make sure to define ALL of the variables below, even if they
-# are empty. Otherwise, this application will not be configured properly.
-profiles:
-  - git_remote_url: https://github.com/intel/rni-profile-base-ubuntu.git
-    profile_branch: slim
-    profile_base_branch: master
-    git_username: ""
-    git_token: ""
-    name: Ubuntu_with_Docker
-    custom_git_arguments: --depth=1
-```
 
 ## Known Limitations
 
