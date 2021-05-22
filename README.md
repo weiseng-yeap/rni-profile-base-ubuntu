@@ -11,6 +11,9 @@ Intended to be used with [Retail Node Installer](https://github.com/intel/retail
 ## Target Device Prerequisites
 
 * x86 Bare Metal or x86 Virtual Machine
+  * BIOS Settings
+    * VT-d: enabled
+    * Graphic Aperture Size: 1024MB
 * At Least 5 GB of Disk Space
   * Supports the following drive types:
     * SDD
@@ -19,12 +22,6 @@ Intended to be used with [Retail Node Installer](https://github.com/intel/retail
 * 4 GB of RAM
 
 ## Detailed Instructions
-
-### Hardware preparation/UEFI settings
-
-Key area to configure to ensure maximum utilization of hardware are:
-- VT-d setting: enabled
-- Graphic Aperture size: 1024MB
 
 ### Set Up ESP Server
 
@@ -66,10 +63,15 @@ Move the kernel files and make sure to match the names below
 - /opt/stage/kernel/linux-image.deb
 - /opt/stage/kernel/linux-headers.deb
 
-
-Create a VM file system using the example as a template
+### Choose a Target VM System
+Create a VM file system based on one of the existing branches and fill in <BRANCH>:
+- 2-chrome-os
+- chrome-os
+- 2-ubuntu-desktop
+- ubuntu-desktop
+ 
 ```bash
-git -C /opt/stage clone https://github.com/sedillo/kvm-target.git target
+git -C /opt/stage clone -b <BRANCH> https://github.com/sedillo/kvm-target.git target
 ```
 
 OVMF Files
@@ -83,7 +85,6 @@ cp edk2.git-ovmf-x64_0-20210422.12_all.deb /opt/stage/kernel/OVMF.deb
 
 Move any disk images to the following directory *Make sure the file ends in .qcow2*
 - /opt/stage/disk/\*.qcow2
-
 
 Optional: A default Qemu is installed, but this can be overriden by adding qemu here 
 - /opt/stage/qemu/qemu.tar.gz
