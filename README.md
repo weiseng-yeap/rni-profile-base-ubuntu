@@ -21,75 +21,9 @@ Intended to be used with [Retail Node Installer](https://github.com/intel/retail
     * MMC
 * 4 GB of RAM
 
-## Detailed Instructions
-
-### Set Up ESP Server
-
-Follow steps 1-3 from here: https://github.com/intel/edge-software-provisioner#quick-installation-guide
-
-Open the file conf/config.yml and add the follow profile:
-```
-  - git_remote_url: https://github.com/sedillo/rni-profile-base-ubuntu/
-    profile_branch: gvt
-    profile_base_branch: master
-    git_username: ""
-    git_token: ""
-    # This is the name that will be shown on the PXE menu (NOTE: No Spaces)
-    name: GVT
-    custom_git_arguments: ""
-```
-
-Now follow steps 4-5 from the same guide: https://github.com/intel/edge-software-provisioner#quick-installation-guide
-
-### Kernel Build
-
-Follow instructions on Github here: https://github.com/huichuno/linuxbox
-
-### Merge KVM with ESP
-We will combine the KVM files built with the ESP Apache server located here /opt/esp/data/usr/share/nginx/html
-Verify this folder exists.
-```
-cd /opt
-mkdir -p /opt/esp/data/usr/share/nginx/html/stage
-ln -s /opt/esp/data/usr/share/nginx/html/stage stage
-```
-Adding any file to /opt/stage should now appear at the ESP URL http://${PROVISIONER}/stage/
-```
-mkdir -p /opt/stage/kernel
-mkdir -p /opt/stage/qemu
-mkdir -p /opt/stage/disk
-```
-Move the kernel files and make sure to match the names below
-- /opt/stage/kernel/linux-image.deb
-- /opt/stage/kernel/linux-headers.deb
-
-### Choose a Target VM System
-Create a VM file system based on one of the existing branches and fill in <BRANCH>:
-- 2-chrome-os
-- chrome-os
-- 2-ubuntu-desktop
-- ubuntu-desktop
- 
-```bash
-git -C /opt/stage clone -b <BRANCH> https://github.com/sedillo/kvm-target.git target
-```
-
-OVMF Files
-```bash
-cd /opt
-apt-get install -y alien
-wget https://www.kraxel.org/repos/jenkins/edk2/edk2.git-ovmf-x64-0-20210421.12.gf297b7f200.noarch.rpm
-alien edk2.git-ovmf-x64-0-20210421.12.gf297b7f200.noarch.rpm
-cp edk2.git-ovmf-x64_0-20210422.12_all.deb /opt/stage/kernel/OVMF.deb
-```
-
-Move any disk images to the following directory *Make sure the file ends in .qcow2*
-- /opt/stage/disk/\*.qcow2
-
-Optional: A default Qemu is installed, but this can be overriden by adding qemu here 
-- /opt/stage/qemu/qemu.tar.gz
-
 ## Getting Started
+
+First execute the detailed instructions here: https://github.com/sedillo/host-builder
 
 **A necessary prerequisite to using this profile is having an Retail Node Installer deployed**. Please refer to Retail Node Installer project documentation for [installation](https://github.com/intel/retail-node-installer) in order to deploy it.
 
