@@ -110,7 +110,8 @@ run "Starting kvm services" \
                 export TERM=xterm-color && \
                 mount ${BOOT_PARTITION} /boot && \
                 export DEBIAN_FRONTEND=noninteractive && \
-                systemctl enable qemu.service && \
+                systemctl enable qemu-vm1.service && \
+                systemctl enable qemu-vm2.service && \
                 systemctl enable vgpu.service && \
                 usermod -a -G kvm ${param_username} && \
                 usermod -a -G render ${param_username} && \
